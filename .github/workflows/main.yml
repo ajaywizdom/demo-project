@@ -8,14 +8,12 @@ on:
         default: 'apply'
         type: choice
         options:
-          - plan
           - apply
           - destroy
 
 jobs:
   aws:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.terraform == 'plan' }} 
+    runs-on: ubuntu-latest 
     steps:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -23,5 +21,37 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1
-    - name: Check Authentication
-      run: aws sts get-caller-identity
+
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      id: init
+      run: |
+        cd oidc
+        terraform init -input=false
+
+    - name: Terraform Validate
+      id: validate
+      run: |
+        cd oidc
+        terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        cd oidc
+        terraform plan -no-color -input=false
+      continue-on-error: true
+    
+    - name: Terraform apply
+      if: ${{ github.event.inputs.terraform == 'apply' }}
+      run: |
+        cd oidc
+        terraform apply -auto-approve
+
+    - name: Terraform destroy
+      if: ${{ github.event.inputs.terraform == 'destroy' }}
+      run: |
+        cd oidc
+        terraform destroy -auto-approve
