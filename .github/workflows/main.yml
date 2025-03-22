@@ -15,7 +15,7 @@ on:
 jobs:
   print-msg:
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.terraform == "plan" }} 
+    if: ${{ github.event.inputs.terraform == 'plan' }} 
     steps:
       - name: Print the input msg to STDOUT
         run: echo  Terraform action choosen by $GITHUB_ACTOR is ${{ github.event.inputs.terraform }} 
