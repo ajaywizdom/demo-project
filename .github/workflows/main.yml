@@ -1,0 +1,21 @@
+name: Deployment for demo-project
+on:
+  workflow_dispatch:
+    inputs:
+      terraform:
+        description: 'Terrform actions to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+jobs:
+  print-msg:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.terraform == "plan" }} 
+    steps:
+      - name: Print the input msg to STDOUT
+        run: echo  Terraform action choosen by $GITHUB_ACTOR is ${{ github.event.inputs.terraform }} 
