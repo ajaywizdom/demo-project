@@ -86,8 +86,24 @@ resource "aws_internet_gateway" "demo" {
 }
 
 resource "aws_route" "demo" {
-  count = length(data.aws_availability_zones.azs.names)
-  route_table_id            = element(aws_route_table.public[*].id, count.index)
-  destination_cidr_block    = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.demo.id
+  route_table_id         = aws_route_table.public.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.demo.id
+}
+
+resource "aws_route" "private" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.demo.id
+}
+
+resource "aws_eip" "demo" {
+  #   domain = "vpc"
+}
+resource "aws_nat_gateway" "demo" {
+  allocation_id = aws_eip.demo.id
+  subnet_id     = aws_subnet.public[0].id
+  tags = {
+    Name = "demo-nat-gateway"
+  }
 }
