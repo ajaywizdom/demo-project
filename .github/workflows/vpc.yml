@@ -1,0 +1,56 @@
+name: VPC deployment for demo-project
+on:
+  workflow_dispatch:
+    inputs:
+      terraform:
+        description: 'Terrform actions to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+
+jobs:
+  vpc:
+    runs-on: ubuntu-latest 
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ap-south-1
+        role-to-assume: arn:aws:iam::024848487830:role/demo-role
+
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      id: init
+      run: |
+        cd vpc
+        terraform init -input=false
+
+    - name: Terraform Validate
+      id: validate
+      run: |
+        cd vpc
+        terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        cd vpc
+        terraform plan -no-color -input=false
+      continue-on-error: true
+    
+    - name: Terraform apply
+      if: ${{ github.event.inputs.terraform == 'apply' }}
+      run: |
+        cd vpc
+        terraform apply -auto-approve
+
+    - name: Terraform destroy
+      if: ${{ github.event.inputs.terraform == 'destroy' }}
+      run: |
+        cd vpc
+        terraform destroy -auto-approve
