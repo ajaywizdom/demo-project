@@ -13,9 +13,15 @@ on:
           - destroy
 
 jobs:
-  print-msg:
+  aws:
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.terraform == 'plan' }} 
     steps:
-      - name: Print the input msg to STDOUT
-        run: echo  Terraform action choosen by $GITHUB_ACTOR is ${{ github.event.inputs.terraform }} 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+    - name: Check Authentication
+      run: aws sts get-caller-identity
