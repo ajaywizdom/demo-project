@@ -1,0 +1,4 @@
+apiVersion: v2
+name: demo-app
+description: A Helm chart for deploying an Nginx app
+version: 0.1.0

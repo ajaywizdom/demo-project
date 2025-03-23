@@ -95,9 +95,13 @@ jobs:
     - name: Update Kubeconfig
       run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
 
-    - name: Apply Deployment and Service
+    - name: Change image tag
       run: |
-        kubectl apply -f namespace.yaml
-        kubectl apply -f deployment.yaml
-        kubectl apply -f service.yaml
-      working-directory: ./k8s
+        sed -i "s/tag: latest/tag: ${GITHUB_SHA}/" ./charts/values.yaml
+
+    - uses: azure/setup-helm@v4.3.0
+      id: install
+
+    - name: Helm Release
+      run: |
+         helm upgrade demp-app ./charts -n demo-app --create-namespace
