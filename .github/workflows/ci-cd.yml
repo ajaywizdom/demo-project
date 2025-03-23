@@ -61,22 +61,14 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: ${{ runner.temp }}/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
     - name: Build and push Docker image to Amazon ECR
       uses: docker/build-push-action@v6
       with:
         context: ./sample-spring-app
         push: true
         tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.REPOSITORY }}:latest,${{ steps.login-ecr.outputs.registry }}/${{ env.REPOSITORY }}:${{ github.sha }}
-        cache-from: type=local,src=${{ runner.temp }}/.buildx-cache
-        cache-to: type=local,dest=${{ runner.temp }}/.buildx-cache-new,mode=max
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: demo-app
