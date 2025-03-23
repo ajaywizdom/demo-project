@@ -1,0 +1,59 @@
+name: EKS deployment for demo-project
+on:
+  workflow_dispatch:
+    inputs:
+      terraform:
+        description: 'Terrform actions to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  eks:
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./eks
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ap-south-1
+        role-to-assume: arn:aws:iam::024848487830:role/demo-role
+
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      id: init
+      run: |
+        terraform init -input=false
+
+    - name: Terraform Validate
+      id: validate
+      run: |
+        terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        terraform plan -no-color -input=false
+      continue-on-error: true
+    
+    - name: Terraform apply
+      if: ${{ github.event.inputs.terraform == 'apply' }}
+      run: |
+        terraform apply -auto-approve
+
+    - name: Terraform destroy
+      if: ${{ github.event.inputs.terraform == 'destroy' }}
+      run: |
+        terraform destroy -auto-approve
