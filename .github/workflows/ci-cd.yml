@@ -73,3 +73,31 @@ jobs:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: demo-app
         IMAGE_TAG: ${{ github.sha }}
+
+  deploy:
+    name: Deploy to Amazon EKS
+    runs-on: ubuntu-latest
+    env:
+      CLUSTER_NAME: "my-eks-cluster"
+      AWS_REGION: "ap-south-1"
+      AWS_ACCOUNT_ID: "024848487830"
+      
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/demo-role
+        
+    - name: Update Kubeconfig
+      run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
+
+    - name: Apply Deployment and Service
+      run: |
+        kubectl apply -f namespace.yaml
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
+      working-directory: ./k8s
