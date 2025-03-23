@@ -1,4 +1,4 @@
-name: EKS deployment for demo-project
+name: VPC and EKS deployment for demo-project
 on:
   workflow_dispatch:
     inputs:
