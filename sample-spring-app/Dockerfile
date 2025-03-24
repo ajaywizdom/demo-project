@@ -15,7 +15,7 @@ FROM maven:3.9.8-eclipse-temurin-17-focal
 WORKDIR /app
 
 # Add a non-root user for security purposes
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 USER appuser
 
 # Copy the built artifact from the builder stage
