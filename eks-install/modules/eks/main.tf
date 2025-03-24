@@ -1,5 +1,5 @@
 resource "aws_iam_role" "cluster" {
-  name = "${var.cluster_name}-cluster-role-0"
+  name = "${var.cluster_name}-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -22,6 +22,9 @@ resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
   version  = var.cluster_version
   role_arn = aws_iam_role.cluster.arn
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP"
+  }
 
   vpc_config {
     subnet_ids = var.subnet_ids
@@ -32,8 +35,24 @@ resource "aws_eks_cluster" "main" {
   ]
 }
 
+resource "aws_eks_access_entry" "iam_user" {
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = "arn:aws:iam::024848487830:user/demo-user"
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "example" {
+  cluster_name  = aws_eks_cluster.main.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = aws_eks_access_entry.iam_user.principal_arn
+
+  access_scope {
+    type       = "cluster"
+  }
+}
+
 resource "aws_iam_role" "node" {
-  name = "${var.cluster_name}-node-role-0"
+  name = "${var.cluster_name}-node-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

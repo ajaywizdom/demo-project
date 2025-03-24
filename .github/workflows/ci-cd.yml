@@ -64,6 +64,7 @@ jobs:
     - name: Build and push Docker image to Amazon ECR
       uses: docker/build-push-action@v6
       with:
+        platforms: linux/amd64,linux/arm64
         context: ./sample-spring-app
         push: true
         tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.REPOSITORY }}:latest,${{ steps.login-ecr.outputs.registry }}/${{ env.REPOSITORY }}:${{ github.sha }}
@@ -104,4 +105,9 @@ jobs:
 
     - name: Helm Release
       run: |
-         helm upgrade demp-app ./charts -n demo-app --create-namespace
+        kubectl get secret ecr-secret -n demo-app || kubectl create secret docker-registry ecr-secret \
+          --docker-server=024848487830.dkr.ecr.ap-south-1.amazonaws.com \
+          --docker-username=AWS \
+          --docker-password=$(aws ecr get-login-password --region ap-south-1) \
+          --namespace demo-app
+        helm upgrade demp-app ./charts -n demo-app --create-namespace
