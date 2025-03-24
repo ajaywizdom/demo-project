@@ -6,6 +6,9 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+imagePullSecrets:
+- name: ecr-secret
+
 service:
   type: LoadBalancer
   port: 80

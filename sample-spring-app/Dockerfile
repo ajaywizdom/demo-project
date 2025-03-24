@@ -11,7 +11,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime Stage
-FROM eclipse-temurin:17-jre-alpine
+FROM maven:3.9.8-eclipse-temurin-17-focal
 WORKDIR /app
 
 # Add a non-root user for security purposes

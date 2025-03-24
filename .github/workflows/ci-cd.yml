@@ -76,6 +76,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
 
   deploy:
+    needs: build
     name: Deploy to Amazon EKS
     runs-on: ubuntu-latest
     env:
@@ -110,4 +111,4 @@ jobs:
           --docker-username=AWS \
           --docker-password=$(aws ecr get-login-password --region ap-south-1) \
           --namespace demo-app
-        helm upgrade demp-app ./charts -n demo-app --create-namespace
+        helm upgrade demo-app ./charts -n demo-app --create-namespace --install
